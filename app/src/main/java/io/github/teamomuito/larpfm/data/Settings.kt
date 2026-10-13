@@ -54,7 +54,7 @@ class Settings(context: Context) {
 
     private val _scrobbleAgain = MutableStateFlow(prefs.getBoolean(KEY_SCROBBLE_AGAIN, true))
 
-    /** Once a track has been scrobbled, resuming it or moving to another point scrobbles it again. */
+    /** Resuming a track after a pause, or jumping to another point in it, scrobbles it again right away. */
     val scrobbleAgain: StateFlow<Boolean> = _scrobbleAgain.asStateFlow()
 
     private val _apps = MutableStateFlow(loadApps())

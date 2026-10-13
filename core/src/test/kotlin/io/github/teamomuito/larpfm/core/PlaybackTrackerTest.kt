@@ -218,13 +218,87 @@ class PlaybackTrackerTest {
     }
 
     @Test
-    fun `a move to another point is not a scrobble for a track that hasn't counted yet`() {
+    fun `fast-forwarding scrobbles a track even before it has counted`() {
         tracker.onMetadata(song)
         tracker.onPlaybackState(true, positionMs = 0L)
         clock.advance(20_000)
 
-        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 120_000L))
+        assertEquals(
+            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_020))),
+            tracker.onPlaybackState(true, positionMs = 120_000L),
+        )
         assertEquals(20_000L, tracker.totalPlayedMs())
+    }
+
+    @Test
+    fun `pausing and resuming scrobbles a track even before it has counted, and it still counts later`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true)
+        clock.advance(10_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(false))
+
+        clock.advance(5_000)
+        assertEquals(
+            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_015)), TrackerEvent.NowPlaying(song)),
+            tracker.onPlaybackState(true),
+        )
+
+        clock.advance(90_000)
+        assertEquals(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_000)), tracker.checkThreshold())
+    }
+
+    @Test
+    fun `a blip in the first moments of a track is not a pause`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true)
+        clock.advance(500)
+        tracker.onPlaybackState(false)
+
+        assertEquals(listOf(TrackerEvent.NowPlaying(song)), tracker.onPlaybackState(true))
+    }
+
+    @Test
+    fun `a jump reported while buffering is a move, and only one`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true, positionMs = 0L)
+        clock.advance(100_000)
+        tracker.onPlaybackState(true, positionMs = 100_000L)
+
+        clock.advance(10_000)
+        assertEquals(
+            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_110))),
+            tracker.onPlaybackState(true, positionMs = 30_000L, advancing = false),
+        )
+        clock.advance(2_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 30_000L))
+    }
+
+    @Test
+    fun `playing off the end into the next track is not a move`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true, positionMs = 0L)
+        clock.advance(190_000)
+        tracker.onPlaybackState(true, positionMs = 190_000L)
+
+        clock.advance(10_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 0L))
+    }
+
+    @Test
+    fun `two jumps in the same second are two scrobbles`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true, positionMs = 0L)
+        clock.advance(10_000)
+        assertEquals(
+            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_010))),
+            tracker.onPlaybackState(true, positionMs = 100_000L),
+        )
+
+        clock.advance(500)
+        assertEquals(
+            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_011))),
+            tracker.onPlaybackState(true, positionMs = 0L),
+        )
     }
 
     @Test
@@ -325,9 +399,9 @@ class PlaybackTrackerTest {
         assertTrue(tracker.checkThreshold() is TrackerEvent.ScrobbleReady)
 
         clock.advance(5_000)
-        tracker.onPlaybackState(tracker.isPlaying)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 105_000L, advancing = false))
         clock.advance(20_000)
-        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 100_000L))
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 105_000L))
     }
 
     @Test
@@ -336,11 +410,12 @@ class PlaybackTrackerTest {
         instant.onMetadata(song)
         instant.onPlaybackState(true)
         assertEquals(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_000)), instant.checkThreshold())
+        clock.advance(3_000)
         assertEquals(emptyList<TrackerEvent>(), instant.onPlaybackState(false))
 
         clock.advance(5_000)
         assertEquals(
-            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_005)), TrackerEvent.NowPlaying(song)),
+            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_008)), TrackerEvent.NowPlaying(song)),
             instant.onPlaybackState(true),
         )
         assertNull(instant.checkThreshold())

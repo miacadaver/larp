@@ -103,10 +103,10 @@ class ScrobbleListenerService : NotificationListenerService() {
         }
 
         private fun reportState(state: PlaybackState?) {
-            // Buffering isn't a stop, so a brief stall doesn't count as a pause and play again. The
-            // position stops moving while it buffers, so it's left out until playback is back.
+            // Buffering isn't a stop, so a brief stall doesn't count as a pause and play again. Its
+            // position still counts: players often buffer right after a fast-forward or rewind.
             if (state.isTransient()) {
-                handle(tracker.onPlaybackState(tracker.isPlaying))
+                handle(tracker.onPlaybackState(tracker.isPlaying, state.positionNowMs(), advancing = false))
                 return
             }
             handle(tracker.onPlaybackState(state.isPlaying(), state.positionNowMs()))

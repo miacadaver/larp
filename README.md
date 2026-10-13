@@ -23,7 +23,7 @@ any app with a media notification) and scrobbles it to [Last.fm](https://www.las
 ## features
 
 - scrobble as soon as a song starts, or after up to 50% of it (Last.fm's default is 50%)
-- once a song has counted, scrobble it again straight away when you resume it after a pause, or jump to another point in it (switch it off under Settings → Scrobble again)
+- scrobble a song again right away every time you resume it after a pause, or jump to another point in it (switch it off under Settings → Scrobble again)
 - works with Last.fm or Libre.fm, you pick when you sign in
 - send the album, or just artist + track
 - clean up album titles: `Iron Maiden (Remaster) [Special]` becomes `Iron Maiden`

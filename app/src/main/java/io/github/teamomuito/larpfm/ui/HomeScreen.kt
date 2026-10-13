@@ -79,7 +79,11 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
     Column(Modifier.fillMaxSize()) {
         DsTopBar("LARP.FM")
         DsPrompt(
-            message = flash ?: if (enabled) "Scrobbling is on." else "Scrobbling is paused.",
+            message = flash ?: when {
+                !hasAccess -> "Allow notification access first."
+                enabled -> "Scrobbling is on."
+                else -> "Scrobbling is off. Press A."
+            },
             count = if (pendingCount > 0) "$pendingCount waiting" else null,
         )
 
@@ -137,12 +141,13 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
                 onClick = { askingToSignOut = true },
             )
             DsButton(
-                label = if (enabled) "Pause" else "Resume",
+                // This switches scrobbling, not the music, so it doesn't say "Pause".
+                label = if (enabled) "Turn off" else "Turn on",
                 letter = "A",
                 modifier = Modifier.weight(1f),
                 onClick = {
                     viewModel.setScrobblingEnabled(!enabled)
-                    flash = if (enabled) "Paused!" else "Resumed!"
+                    flash = if (enabled) "Scrobbling off!" else "Scrobbling on!"
                 },
             )
         }
@@ -336,7 +341,7 @@ private fun SettingsCard(
         )
         SettingSwitch(
             title = "Scrobble again",
-            description = "Once a track has counted, resuming it or moving to another point scrobbles it again",
+            description = "Resuming a song after a pause, or jumping to another point in it, scrobbles it again right away",
             checked = scrobbleAgain,
             onCheckedChange = onScrobbleAgainChange,
         )
