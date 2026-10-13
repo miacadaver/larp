@@ -1,7 +1,6 @@
 package io.github.teamomuito.larpfm.ui
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -28,9 +27,6 @@ private val DsColorScheme = lightColorScheme(
 
 @Composable
 fun LarpTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = DsColorScheme,
-        typography = Typography(defaultFontFamily = DsFont),
-        content = content,
-    )
+    // Text goes through DsText, which sets DotGothic16 itself, so the Material typography is left alone.
+    MaterialTheme(colorScheme = DsColorScheme, content = content)
 }
