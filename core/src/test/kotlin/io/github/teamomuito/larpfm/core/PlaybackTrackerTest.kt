@@ -253,7 +253,7 @@ class PlaybackTrackerTest {
     }
 
     @Test
-    fun `moves within thirty seconds of a scrobble again don't scrobble again`() {
+    fun `every move in a scrobbled track scrobbles it again`() {
         tracker.onMetadata(song)
         tracker.onPlaybackState(true, positionMs = 0L)
         clock.advance(100_000)
@@ -267,7 +267,10 @@ class PlaybackTrackerTest {
         )
 
         clock.advance(10_000)
-        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 0L))
+        assertEquals(
+            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_120))),
+            tracker.onPlaybackState(true, positionMs = 0L),
+        )
 
         clock.advance(21_000)
         assertEquals(
