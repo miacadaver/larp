@@ -274,14 +274,73 @@ class PlaybackTrackerTest {
     }
 
     @Test
-    fun `playing off the end into the next track is not a move`() {
+    fun `a track that repeats scrobbles again once the repeat has lasted two seconds`() {
         tracker.onMetadata(song)
         tracker.onPlaybackState(true, positionMs = 0L)
-        clock.advance(190_000)
-        tracker.onPlaybackState(true, positionMs = 190_000L)
+        clock.advance(100_000)
+        tracker.onPlaybackState(true, positionMs = 100_000L)
+        assertTrue(tracker.checkThreshold() is TrackerEvent.ScrobbleReady)
 
-        clock.advance(10_000)
+        clock.advance(100_000)
         assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 0L))
+        assertEquals(2_000L, tracker.msUntilScrobble())
+
+        clock.advance(2_000)
+        assertEquals(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_202)), tracker.checkThreshold())
+    }
+
+    @Test
+    fun `a repeat noticed later in the song still scrobbles it again`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true, positionMs = 0L)
+        clock.advance(100_000)
+        tracker.onPlaybackState(true, positionMs = 100_000L)
+        assertTrue(tracker.checkThreshold() is TrackerEvent.ScrobbleReady)
+
+        clock.advance(130_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 30_000L))
+        clock.advance(2_000)
+        assertEquals(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_232)), tracker.checkThreshold())
+    }
+
+    @Test
+    fun `a jump back at the end that becomes the next track is not a repeat`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true, positionMs = 0L)
+        clock.advance(100_000)
+        tracker.onPlaybackState(true, positionMs = 100_000L)
+        assertTrue(tracker.checkThreshold() is TrackerEvent.ScrobbleReady)
+
+        clock.advance(100_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 0L))
+
+        clock.advance(1_000)
+        val next = Track("Artist", "Next", durationMs = 180_000)
+        assertEquals(listOf(TrackerEvent.NowPlaying(next)), tracker.onMetadata(next))
+
+        clock.advance(5_000)
+        assertNull(tracker.checkThreshold())
+    }
+
+    @Test
+    fun `metadata re-sent for the same song during the wait doesn't cancel a repeat`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true, positionMs = 0L)
+        clock.advance(100_000)
+        tracker.onPlaybackState(true, positionMs = 100_000L)
+        assertTrue(tracker.checkThreshold() is TrackerEvent.ScrobbleReady)
+
+        clock.advance(100_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 0L))
+
+        clock.advance(1_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onMetadata(song.copy(album = "Album")))
+
+        clock.advance(1_000)
+        assertEquals(
+            TrackerEvent.ScrobbleReady(Scrobble(song.copy(album = "Album"), 1_700_000_202)),
+            tracker.checkThreshold(),
+        )
     }
 
     @Test

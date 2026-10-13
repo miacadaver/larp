@@ -341,7 +341,7 @@ private fun SettingsCard(
         )
         SettingSwitch(
             title = "Scrobble again",
-            description = "Resuming a song after a pause, or jumping to another point in it, scrobbles it again right away",
+            description = "Resuming a song after a pause, jumping to another point in it, or it repeating scrobbles it again",
             checked = scrobbleAgain,
             onCheckedChange = onScrobbleAgainChange,
         )
