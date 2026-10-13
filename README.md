@@ -5,7 +5,7 @@
 <h1 align="center">larp.fm</h1>
 
 <p align="center">
-  a pink little Last.fm and Libre.fm scrobbler for Android
+  a little Last.fm and Libre.fm scrobbler for Android, dressed up like a DS system menu
 </p>
 
 <p align="center">
@@ -23,13 +23,14 @@ any app with a media notification) and scrobbles it to [Last.fm](https://www.las
 ## features
 
 - scrobble as soon as a song starts, or after up to 50% of it (Last.fm's default is 50%)
+- scrobble again every time you stop and continue a song, or skip back to its start, once it has counted
 - works with Last.fm or Libre.fm, you pick when you sign in
 - send the album, or just artist + track
 - clean up album titles: `Iron Maiden (Remaster) [Special]` becomes `Iron Maiden`
 - scrobble just the first artist: `Artist A feat. Artist B` becomes `Artist A`
 - choose which apps get scrobbled
 - check what Last.fm or Libre.fm actually recorded, right from the app
-- pink liquid glass, obviously
+- the look of [Pictoclip](https://github.com/teamomuito/pictoclip): grid paper, notched panels, and a pixel font
 
 ## install
 
@@ -86,3 +87,8 @@ The code is split in two:
   follows media sessions, and WorkManager to send scrobbles.
 
 </details>
+
+## credits
+
+Font: [DotGothic16](https://github.com/fontworks-fonts/DotGothic16), SIL Open Font License 1.1 (see `FONT-LICENSE-OFL.txt`).
+The look is borrowed from [Pictoclip](https://github.com/teamomuito/pictoclip). Not affiliated with Nintendo.

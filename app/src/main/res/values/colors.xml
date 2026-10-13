@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="pink">#C2185B</color>
-    <color name="window_background">#FFF8F9</color>
+    <color name="accent">#3E6DB0</color>
+    <color name="window_background">#E9ECEF</color>
     <color name="ic_launcher_background">#FFE3EF</color>
     <color name="cat_fur">#FF4FA3</color>
     <color name="cat_inner_ear">#FFB8D9</color>

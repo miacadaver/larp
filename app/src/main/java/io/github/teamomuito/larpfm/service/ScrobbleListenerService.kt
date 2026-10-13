@@ -88,7 +88,7 @@ class ScrobbleListenerService : NotificationListenerService() {
         init {
             controller.registerCallback(this, handler)
             handle(tracker.onMetadata(controller.metadata?.toTrack()))
-            handle(tracker.onPlaybackState(controller.playbackState.isPlaying()))
+            reportState(controller.playbackState)
         }
 
         override fun onMetadataChanged(metadata: MediaMetadata?) {
@@ -96,7 +96,13 @@ class ScrobbleListenerService : NotificationListenerService() {
         }
 
         override fun onPlaybackStateChanged(state: PlaybackState?) {
-            handle(tracker.onPlaybackState(state.isPlaying()))
+            reportState(state)
+        }
+
+        private fun reportState(state: PlaybackState?) {
+            // Buffering isn't a stop, so a brief stall doesn't count as a pause and play again.
+            if (state.isTransient()) return
+            handle(tracker.onPlaybackState(state.isPlaying(), state.positionNowMs()))
         }
 
         override fun onSessionDestroyed() {
@@ -169,6 +175,20 @@ class ScrobbleListenerService : NotificationListenerService() {
 }
 
 private fun PlaybackState?.isPlaying() = this?.state == PlaybackState.STATE_PLAYING
+
+private fun PlaybackState?.isTransient(): Boolean {
+    val state = this?.state ?: return false
+    return state == PlaybackState.STATE_BUFFERING || state == PlaybackState.STATE_CONNECTING
+}
+
+/** Where playback is now: the position the player reported, moved on by the time since it reported it. */
+private fun PlaybackState?.positionNowMs(): Long? {
+    val state = this ?: return null
+    if (state.position == PlaybackState.PLAYBACK_POSITION_UNKNOWN) return null
+    if (state.state != PlaybackState.STATE_PLAYING) return state.position
+    val sinceUpdateMs = SystemClock.elapsedRealtime() - state.lastPositionUpdateTime
+    return state.position + (sinceUpdateMs * state.playbackSpeed).toLong()
+}
 
 private fun MediaMetadata.toTrack(): Track? {
     fun text(key: String) = getString(key)?.trim()?.takeIf { it.isNotEmpty() }

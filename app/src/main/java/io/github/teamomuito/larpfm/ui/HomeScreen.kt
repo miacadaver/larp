@@ -9,43 +9,34 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.text.format.DateUtils
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.teamomuito.larpfm.R
 import io.github.teamomuito.larpfm.core.ScrobbleRules
 import io.github.teamomuito.larpfm.data.Account
 import io.github.teamomuito.larpfm.data.ApiLogEntry
@@ -54,6 +45,7 @@ import io.github.teamomuito.larpfm.data.NowPlaying
 import io.github.teamomuito.larpfm.data.ScrobbleEntry
 import io.github.teamomuito.larpfm.data.ScrobbleStatus
 import io.github.teamomuito.larpfm.service.ScrobbleListenerService
+import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
 @Composable
@@ -73,29 +65,35 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
     val apiLog by viewModel.apiLog.collectAsStateWithLifecycle()
     val site = account.service.title
 
-    Scaffold(containerColor = Color.Transparent, contentColor = MaterialTheme.colorScheme.onBackground) { padding ->
+    // The prompt flashes a short message, like Pictoclip's "Saved!", then says what's going on again.
+    var flash by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(flash) {
+        if (flash != null) {
+            delay(1_500)
+            flash = null
+        }
+    }
+    var askingToSignOut by remember { mutableStateOf(false) }
+
+    Column(Modifier.fillMaxSize()) {
+        DsTopBar("LARP.FM")
+        DsPrompt(
+            message = flash ?: if (enabled) "Scrobbling is on." else "Scrobbling is paused.",
+            count = if (pendingCount > 0) "$pendingCount waiting" else null,
+        )
+
         LazyColumn(
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = padding.calculateTopPadding() + 12.dp,
-                bottom = padding.calculateBottomPadding() + 24.dp,
-            ),
+            Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item { Header(account, onSignOut = viewModel::signOut) }
+            item { AccountRow(account) }
 
             if (!hasAccess) {
                 item { NotificationAccessCard() }
             }
 
-            item {
-                NowPlayingCard(
-                    nowPlaying = nowPlaying,
-                    enabled = enabled,
-                    onEnabledChange = viewModel::setScrobblingEnabled,
-                )
-            }
+            item { NowPlayingCard(nowPlaying) }
 
             if (pendingCount > 0 || lastError != null) {
                 item { QueueCard(site, pendingCount, lastError, onSendNow = viewModel::sendNow) }
@@ -123,88 +121,97 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
 
             item { SectionLabel("Recent scrobbles") }
             if (recent.isEmpty()) {
-                item { GlassCard(Modifier.fillMaxWidth()) { Text("Nothing scrobbled yet.", style = MaterialTheme.typography.bodyMedium) } }
+                item { EmptyScrobbles() }
             }
             items(recent, key = { "scrobble:" + it.id }) { entry -> ScrobbleRow(entry) }
         }
+
+        DsBottomBar {
+            DsButton(
+                label = "Sign out",
+                letter = "B",
+                modifier = Modifier.weight(1f),
+                onClick = { askingToSignOut = true },
+            )
+            DsButton(
+                label = if (enabled) "Pause" else "Resume",
+                letter = "A",
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    viewModel.setScrobblingEnabled(!enabled)
+                    flash = if (enabled) "Paused!" else "Resumed!"
+                },
+            )
+        }
+    }
+
+    if (askingToSignOut) {
+        ConfirmDialog(
+            message = "Sign out of $site?",
+            onYes = viewModel::signOut,
+            onNo = { askingToSignOut = false },
+        )
     }
 }
 
+/** Like a clip in the list: the signed-in account, with the site on the right. */
 @Composable
-private fun Header(account: Account, onSignOut: () -> Unit) {
-    Row(Modifier.padding(horizontal = 4.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(56.dp).glass(CircleShape), contentAlignment = Alignment.Center) {
-            Image(painter = painterResource(R.drawable.ic_cat), contentDescription = null, modifier = Modifier.size(40.dp))
+private fun AccountRow(account: Account) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .dsPanel()
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        PageIcon()
+        Column(Modifier.weight(1f).padding(start = 12.dp, end = 10.dp)) {
+            DsText(account.username, size = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            DsText("Signed in", size = 13.sp, color = DsColors.Subtle)
         }
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text("larp.fm", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold))
-            Text(
-                "${account.username} · ${account.service.title}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        TextButton(onClick = onSignOut, modifier = Modifier.glass(CircleShape)) { Text("Sign out") }
+        DsTimePill(account.service.title)
     }
 }
 
 @Composable
 private fun NotificationAccessCard() {
     val context = LocalContext.current
-    GlassCard(Modifier.fillMaxWidth(), tint = MaterialTheme.colorScheme.errorContainer) {
-        Text("Allow notification access", style = MaterialTheme.typography.titleMedium)
-        Text(
+    DsCard(fill = DsColors.Background) {
+        DsText("Allow notification access", size = 15.sp)
+        DsText(
             "Android only lets apps with notification access see what other apps are playing. " +
                 "larp.fm doesn't read or store your notifications.",
-            style = MaterialTheme.typography.bodyMedium,
+            size = 13.sp,
+            color = DsColors.Subtle,
         )
-        FilledTonalButton(onClick = { context.openNotificationAccessSettings() }, colors = glassButtonColors()) {
-            Text("Open settings")
-        }
+        DsButton(label = "Open settings", onClick = { context.openNotificationAccessSettings() })
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Text(
-                "If Android says the setting is restricted: open App info, tap the ⋮ menu, " +
+            DsText(
+                "If Android says the setting is restricted: open App info, tap the three-dot menu, " +
                     "choose \"Allow restricted settings\", then try again.",
-                style = MaterialTheme.typography.bodySmall,
+                size = 13.sp,
+                color = DsColors.Subtle,
             )
-            FilledTonalButton(onClick = { context.openAppInfo() }, colors = glassButtonColors()) {
-                Text("App info")
-            }
+            DsButton(label = "App info", onClick = { context.openAppInfo() })
         }
     }
 }
 
+/** The clip that's selected, so it gets the blue brackets. */
 @Composable
-private fun NowPlayingCard(nowPlaying: NowPlaying?, enabled: Boolean, onEnabledChange: (Boolean) -> Unit) {
+private fun NowPlayingCard(nowPlaying: NowPlaying?) {
     val context = LocalContext.current
-    GlassCard(Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            StatusDot(if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
-            Spacer(Modifier.width(8.dp))
-            Text(
-                if (enabled) "Scrobbling" else "Scrobbling paused",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.weight(1f),
-            )
-            Switch(checked = enabled, onCheckedChange = onEnabledChange)
-        }
-        Column {
-            Text("Now playing", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Box(Modifier.dsCursor(nowPlaying != null).padding(horizontal = 7.dp, vertical = 3.dp)) {
+        DsCard {
+            DsText("Now playing", size = 12.sp, color = DsColors.Subtle)
             if (nowPlaying == null) {
-                Text("Nothing right now", style = MaterialTheme.typography.titleLarge)
+                DsText("Nothing right now", size = 18.sp)
             } else {
                 val appName = remember(nowPlaying.packageName) { context.appLabel(nowPlaying.packageName) }
-                Text(
-                    nowPlaying.track.title,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(nowPlaying.track.artist, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("in $appName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                DsText(nowPlaying.track.title, size = 18.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                DsText(nowPlaying.track.artist, size = 15.sp, color = DsColors.Subtle, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                DsText("in $appName", size = 13.sp, color = DsColors.Subtle)
             }
         }
     }
@@ -212,18 +219,18 @@ private fun NowPlayingCard(nowPlaying: NowPlaying?, enabled: Boolean, onEnabledC
 
 @Composable
 private fun QueueCard(site: String, pendingCount: Int, lastError: String?, onSendNow: () -> Unit) {
-    GlassCard(Modifier.fillMaxWidth()) {
+    DsCard {
         if (pendingCount > 0) {
-            Text(
+            DsText(
                 if (pendingCount == 1) "1 scrobble waiting to be sent" else "$pendingCount scrobbles waiting to be sent",
-                style = MaterialTheme.typography.titleSmall,
+                size = 15.sp,
             )
         }
         if (lastError != null) {
-            Text("$site: $lastError", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            DsText("$site: $lastError", size = 13.sp, color = DsColors.Error)
         }
         if (pendingCount > 0) {
-            FilledTonalButton(onClick = onSendNow, colors = glassButtonColors()) { Text("Send now") }
+            DsButton(label = "Send now", onClick = onSendNow)
         }
     }
 }
@@ -237,27 +244,20 @@ private fun CheckCard(
     onCheck: () -> Unit,
 ) {
     val context = LocalContext.current
-    GlassCard(Modifier.fillMaxWidth()) {
-        Text(
-            "See what $site has actually recorded for $username.",
-            style = MaterialTheme.typography.bodyMedium,
+    DsCard {
+        DsText("See what $site has actually recorded for $username.", size = 13.sp, color = DsColors.Subtle)
+        DsButton(
+            label = if (check == LastFmCheck.Loading) "Checking..." else "Check now",
+            onClick = onCheck,
+            enabled = check != LastFmCheck.Loading,
         )
-        FilledTonalButton(onClick = onCheck, enabled = check != LastFmCheck.Loading, colors = glassButtonColors()) {
-            Text(if (check == LastFmCheck.Loading) "Checking…" else "Check now")
-        }
         when (check) {
             LastFmCheck.Idle, LastFmCheck.Loading -> Unit
-            is LastFmCheck.Error -> Text(
-                check.message,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-            )
+            is LastFmCheck.Error -> DsText(check.message, size = 13.sp, color = DsColors.Error)
             is LastFmCheck.Done -> {
-                check.recent.total?.let {
-                    Text("$it scrobbles on $site", style = MaterialTheme.typography.titleSmall)
-                }
+                check.recent.total?.let { DsText("$it scrobbles on $site", size = 15.sp) }
                 if (check.recent.tracks.isEmpty()) {
-                    Text("$site has no recent tracks", style = MaterialTheme.typography.bodySmall)
+                    DsText("$site has no recent tracks", size = 13.sp, color = DsColors.Subtle)
                 }
                 for (track in check.recent.tracks) {
                     val time = if (track.nowPlaying) {
@@ -271,9 +271,9 @@ private fun CheckCard(
                             ).toString()
                         }.orEmpty()
                     }
-                    Text(
-                        "${track.title} · ${track.artist} · $time",
-                        style = MaterialTheme.typography.bodySmall,
+                    DsText(
+                        "${track.title} - ${track.artist} - $time",
+                        size = 13.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -281,26 +281,18 @@ private fun CheckCard(
             }
         }
         if (apiLog.isNotEmpty()) {
-            Text(
-                "Latest replies from $site",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            DsText("Latest replies from $site", size = 12.sp, color = DsColors.Subtle)
             for (entry in apiLog) {
                 val time = DateUtils.formatDateTime(context, entry.timeMs, DateUtils.FORMAT_SHOW_TIME)
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .glass(RoundedCornerShape(16.dp))
-                        .padding(12.dp),
+                        .dsPanel(fill = DsColors.Background, border = 1.dp)
+                        .padding(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text("$time · ${entry.method} · HTTP ${entry.httpCode}", style = MaterialTheme.typography.labelSmall)
-                    Text(
-                        entry.body,
-                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                        maxLines = 6,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    DsText("$time - ${entry.method} - HTTP ${entry.httpCode}", size = 12.sp, color = DsColors.Subtle)
+                    DsText(entry.body, size = 12.sp, maxLines = 6, overflow = TextOverflow.Ellipsis)
                 }
             }
         }
@@ -318,27 +310,31 @@ private fun SettingsCard(
     firstArtistOnly: Boolean,
     onFirstArtistOnlyChange: (Boolean) -> Unit,
 ) {
-    GlassCard(Modifier.fillMaxWidth()) {
-        Column {
-            Text(
-                if (thresholdPercent == 0) "Scrobble threshold: as soon as it starts" else "Scrobble threshold: $thresholdPercent%",
-                style = MaterialTheme.typography.titleSmall,
-            )
-            Text(
-                if (thresholdPercent == 0) {
-                    "A track counts as soon as it starts playing, even if you skip it right away."
-                } else {
-                    "A track counts once $thresholdPercent% of it has played, or 4 minutes, whichever comes first."
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Slider(
-                value = thresholdPercent.toFloat(),
-                onValueChange = { onThresholdChange(it.roundToInt()) },
-                valueRange = ScrobbleRules.MIN_PERCENT.toFloat()..ScrobbleRules.MAX_PERCENT.toFloat(),
-            )
-        }
+    DsCard {
+        DsText(
+            if (thresholdPercent == 0) "Scrobble threshold: as soon as it starts" else "Scrobble threshold: $thresholdPercent%",
+            size = 15.sp,
+        )
+        DsText(
+            if (thresholdPercent == 0) {
+                "A track counts as soon as it starts playing, even if you skip it right away."
+            } else {
+                "A track counts once $thresholdPercent% of it has played, or 4 minutes, whichever comes first."
+            },
+            size = 13.sp,
+            color = DsColors.Subtle,
+        )
+        DsText(
+            "Once a track has counted, playing it again counts again: after you stop and continue it, " +
+                "or skip back to its start.",
+            size = 13.sp,
+            color = DsColors.Subtle,
+        )
+        DsSlider(
+            value = thresholdPercent.toFloat(),
+            onValueChange = { onThresholdChange(it.roundToInt()) },
+            range = ScrobbleRules.MIN_PERCENT.toFloat()..ScrobbleRules.MAX_PERCENT.toFloat(),
+        )
         SettingSwitch(
             title = "First artist only",
             description = "\"Artist A, Artist B\" or \"Artist A feat. Artist B\" is scrobbled as \"Artist A\"",
@@ -371,21 +367,21 @@ private fun SettingSwitch(
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleSmall)
-            Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            DsText(title, size = 15.sp, color = if (enabled) DsColors.Ink else DsColors.Subtle)
+            DsText(description, size = 13.sp, color = DsColors.Subtle)
         }
         Spacer(Modifier.width(12.dp))
-        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+        DsSwitch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }
 
 @Composable
 private fun AppsCard(apps: List<AppSetting>, onEnabledChange: (String, Boolean) -> Unit) {
-    GlassCard(Modifier.fillMaxWidth()) {
+    DsCard {
         if (apps.isEmpty()) {
-            Text(
+            DsText(
                 "Play something in a music app and it will show up here, so you can choose which apps get scrobbled.",
-                style = MaterialTheme.typography.bodyMedium,
+                size = 15.sp,
             )
         }
         for (app in apps) {
@@ -400,70 +396,73 @@ private fun AppRow(app: AppSetting, onEnabledChange: (Boolean) -> Unit) {
     val label = remember(app.packageName) { context.appLabel(app.packageName) }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(label, style = MaterialTheme.typography.bodyLarge)
+            DsText(label, size = 15.sp)
             if (label != app.packageName) {
-                Text(
+                DsText(
                     app.packageName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    size = 12.sp,
+                    color = DsColors.Subtle,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
         }
-        Switch(checked = app.enabled, onCheckedChange = onEnabledChange)
+        Spacer(Modifier.width(12.dp))
+        DsSwitch(checked = app.enabled, onCheckedChange = onEnabledChange)
     }
+}
+
+@Composable
+private fun EmptyScrobbles() {
+    DsText(
+        "There are no scrobbles yet.\nPlay something in a music app.",
+        size = 15.sp,
+        color = DsColors.Subtle,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .dsPanel(fill = DsColors.Background)
+            .padding(horizontal = 16.dp, vertical = 24.dp),
+    )
 }
 
 @Composable
 private fun ScrobbleRow(entry: ScrobbleEntry) {
     val track = entry.scrobble.track
-    val time = remember(entry.scrobble.timestampSec) {
-        DateUtils.getRelativeTimeSpanString(
-            entry.scrobble.timestampSec * 1000,
-            System.currentTimeMillis(),
-            DateUtils.MINUTE_IN_MILLIS,
-        ).toString()
-    }
     val (status, color) = when (entry.status) {
-        ScrobbleStatus.SENT -> "sent" to MaterialTheme.colorScheme.primary
-        ScrobbleStatus.PENDING -> "waiting to send" to MaterialTheme.colorScheme.outline
-        ScrobbleStatus.IGNORED, ScrobbleStatus.REJECTED -> (entry.message ?: "not scrobbled") to MaterialTheme.colorScheme.error
+        ScrobbleStatus.SENT -> "sent" to DsColors.Cursor
+        ScrobbleStatus.PENDING -> "waiting to send" to DsColors.Subtle
+        ScrobbleStatus.IGNORED, ScrobbleStatus.REJECTED -> (entry.message ?: "not scrobbled") to DsColors.Error
     }
     Row(
         Modifier
             .fillMaxWidth()
-            .glass(RoundedCornerShape(20.dp))
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .heightIn(min = 56.dp)
+            .dsPanel()
+            .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        StatusDot(color)
-        Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            Text(track.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(
-                track.artist,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                "$time · $status",
-                style = MaterialTheme.typography.bodySmall,
-                color = if (entry.status == ScrobbleStatus.IGNORED || entry.status == ScrobbleStatus.REJECTED) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-            )
+        PageIcon()
+        Column(Modifier.weight(1f).padding(start = 12.dp, end = 10.dp)) {
+            DsText(track.title, size = 15.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            DsText(track.artist, size = 13.sp, color = DsColors.Subtle, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            DsText(status, size = 12.sp, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
+        DsTimePill(formatClipTime(entry.scrobble.timestampSec * 1000))
     }
 }
 
 @Composable
-private fun StatusDot(color: Color) {
-    Box(Modifier.size(10.dp).background(color, CircleShape))
+private fun ConfirmDialog(message: String, onYes: () -> Unit, onNo: () -> Unit) {
+    Dialog(onDismissRequest = onNo) {
+        DsCard {
+            DsText(message, size = 15.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                DsButton(label = "No", letter = "B", modifier = Modifier.weight(1f), onClick = onNo)
+                DsButton(label = "Yes", letter = "A", modifier = Modifier.weight(1f), onClick = onYes)
+            }
+        }
+    }
 }
 
 private fun Context.openNotificationAccessSettings() {
