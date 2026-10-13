@@ -52,6 +52,11 @@ class Settings(context: Context) {
     /** Scrobble "Artist A, Artist B" or "Artist A feat. Artist B" as just "Artist A". */
     val firstArtistOnly: StateFlow<Boolean> = _firstArtistOnly.asStateFlow()
 
+    private val _scrobbleAgain = MutableStateFlow(prefs.getBoolean(KEY_SCROBBLE_AGAIN, true))
+
+    /** Once a track has been scrobbled, resuming it or moving to another point scrobbles it again. */
+    val scrobbleAgain: StateFlow<Boolean> = _scrobbleAgain.asStateFlow()
+
     private val _apps = MutableStateFlow(loadApps())
 
     /** Every app that has played media since the app was installed, and whether it gets scrobbled. */
@@ -128,6 +133,11 @@ class Settings(context: Context) {
         _firstArtistOnly.value = firstOnly
     }
 
+    fun setScrobbleAgain(again: Boolean) {
+        prefs.edit { putBoolean(KEY_SCROBBLE_AGAIN, again) }
+        _scrobbleAgain.value = again
+    }
+
     fun isAppEnabled(packageName: String): Boolean =
         _apps.value.firstOrNull { it.packageName == packageName }?.enabled ?: (packageName !in DEFAULT_DISABLED)
 
@@ -181,6 +191,7 @@ class Settings(context: Context) {
         const val KEY_SEND_ALBUM = "send_album"
         const val KEY_CLEAN_ALBUM_TITLES = "clean_album_titles"
         const val KEY_FIRST_ARTIST_ONLY = "first_artist_only"
+        const val KEY_SCROBBLE_AGAIN = "scrobble_again"
         const val KEY_SEEN_APPS = "seen_apps"
         const val KEY_DISABLED_APPS = "disabled_apps"
 

@@ -82,7 +82,10 @@ class ScrobbleListenerService : NotificationListenerService() {
     /** One media session, e.g. a music app, and the progress of whatever it's playing. */
     private inner class Player(private val controller: MediaController) : MediaController.Callback() {
         private val appPackage: String = controller.packageName
-        private val tracker = PlaybackTracker(SystemClocks) { graph.settings.thresholdPercent.value }
+        private val tracker = PlaybackTracker(
+            SystemClocks,
+            scrobbleAgain = { graph.settings.scrobbleAgain.value },
+        ) { graph.settings.thresholdPercent.value }
         private val checkThreshold = Runnable { handle(listOfNotNull(tracker.checkThreshold())) }
 
         init {
@@ -100,8 +103,12 @@ class ScrobbleListenerService : NotificationListenerService() {
         }
 
         private fun reportState(state: PlaybackState?) {
-            // Buffering isn't a stop, so a brief stall doesn't count as a pause and play again.
-            if (state.isTransient()) return
+            // Buffering isn't a stop, so a brief stall doesn't count as a pause and play again. The
+            // position stops moving while it buffers, so it's left out until playback is back.
+            if (state.isTransient()) {
+                handle(tracker.onPlaybackState(tracker.isPlaying))
+                return
+            }
             handle(tracker.onPlaybackState(state.isPlaying(), state.positionNowMs()))
         }
 

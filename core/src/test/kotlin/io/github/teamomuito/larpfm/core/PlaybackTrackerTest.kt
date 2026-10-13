@@ -185,19 +185,58 @@ class PlaybackTrackerTest {
     }
 
     @Test
-    fun `continuing a scrobbled track after a stop counts as a new play`() {
+    fun `resuming a scrobbled track after a pause scrobbles it again straight away`() {
         tracker.onMetadata(song)
         tracker.onPlaybackState(true)
         clock.advance(100_000)
         assertEquals(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_000)), tracker.onPlaybackState(false).single())
 
         clock.advance(60_000)
-        assertEquals(listOf(TrackerEvent.NowPlaying(song)), tracker.onPlaybackState(true))
-        clock.advance(99_000)
-        assertNull(tracker.checkThreshold())
+        assertEquals(
+            listOf(
+                TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_160)),
+                TrackerEvent.NowPlaying(song),
+            ),
+            tracker.onPlaybackState(true),
+        )
+        assertNull(tracker.msUntilScrobble())
+    }
 
-        clock.advance(1_000)
-        assertEquals(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_160)), tracker.checkThreshold())
+    @Test
+    fun `moving to another point in a scrobbled track scrobbles it again`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true, positionMs = 0L)
+        clock.advance(100_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 100_000L))
+        assertTrue(tracker.checkThreshold() is TrackerEvent.ScrobbleReady)
+
+        clock.advance(10_000)
+        assertEquals(
+            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_110))),
+            tracker.onPlaybackState(true, positionMs = 0L),
+        )
+    }
+
+    @Test
+    fun `a move to another point is not a scrobble for a track that hasn't counted yet`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true, positionMs = 0L)
+        clock.advance(20_000)
+
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 120_000L))
+        assertEquals(20_000L, tracker.totalPlayedMs())
+    }
+
+    @Test
+    fun `playing a little off the reported position is not a move`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true, positionMs = 0L)
+        clock.advance(100_000)
+        assertTrue(tracker.checkThreshold() is TrackerEvent.ScrobbleReady)
+
+        clock.advance(2_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 101_000L))
+        assertNull(tracker.msUntilScrobble())
     }
 
     @Test
@@ -214,34 +253,82 @@ class PlaybackTrackerTest {
     }
 
     @Test
-    fun `skipping back to the start of a scrobbled track is a new play`() {
-        tracker.onMetadata(song)
-        assertEquals(listOf(TrackerEvent.NowPlaying(song)), tracker.onPlaybackState(true, positionMs = 0L))
-        clock.advance(100_000)
-        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 100_000L))
-        assertEquals(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_000)), tracker.checkThreshold())
-
-        clock.advance(30_000)
-        assertEquals(listOf(TrackerEvent.NowPlaying(song)), tracker.onPlaybackState(true, positionMs = 0L))
-        clock.advance(100_000)
-        assertEquals(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_130)), tracker.checkThreshold())
-    }
-
-    @Test
-    fun `seeking back to somewhere in the middle is not a new play`() {
+    fun `moves within thirty seconds of a scrobble again don't scrobble again`() {
         tracker.onMetadata(song)
         tracker.onPlaybackState(true, positionMs = 0L)
         clock.advance(100_000)
         tracker.onPlaybackState(true, positionMs = 100_000L)
         assertTrue(tracker.checkThreshold() is TrackerEvent.ScrobbleReady)
 
-        clock.advance(2_000)
-        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 95_000L))
-        assertNull(tracker.msUntilScrobble())
+        clock.advance(10_000)
+        assertEquals(
+            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_110))),
+            tracker.onPlaybackState(true, positionMs = 60_000L),
+        )
+
+        clock.advance(10_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 0L))
+
+        clock.advance(21_000)
+        assertEquals(
+            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_141))),
+            tracker.onPlaybackState(true, positionMs = 150_000L),
+        )
     }
 
     @Test
-    fun `at zero percent every continue after a stop scrobbles again`() {
+    fun `moves while paused scrobble once, when the track is played again`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true, positionMs = 0L)
+        clock.advance(100_000)
+        tracker.onPlaybackState(true, positionMs = 100_000L)
+        assertTrue(tracker.checkThreshold() is TrackerEvent.ScrobbleReady)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(false, positionMs = 100_000L))
+
+        clock.advance(60_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(false, positionMs = 0L))
+
+        clock.advance(5_000)
+        assertEquals(
+            listOf(
+                TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_165)),
+                TrackerEvent.NowPlaying(song),
+            ),
+            tracker.onPlaybackState(true, positionMs = 0L),
+        )
+    }
+
+    @Test
+    fun `turning scrobble again off leaves resuming and moving as plain plays`() {
+        val quiet = PlaybackTracker(clock, scrobbleAgain = { false })
+        quiet.onMetadata(song)
+        quiet.onPlaybackState(true, positionMs = 0L)
+        clock.advance(100_000)
+        assertTrue(quiet.checkThreshold() is TrackerEvent.ScrobbleReady)
+        quiet.onPlaybackState(false, positionMs = 100_000L)
+
+        clock.advance(60_000)
+        assertEquals(listOf(TrackerEvent.NowPlaying(song)), quiet.onPlaybackState(true, positionMs = 100_000L))
+        clock.advance(10_000)
+        assertEquals(emptyList<TrackerEvent>(), quiet.onPlaybackState(true, positionMs = 0L))
+    }
+
+    @Test
+    fun `a stall while buffering is not a move`() {
+        tracker.onMetadata(song)
+        tracker.onPlaybackState(true, positionMs = 0L)
+        clock.advance(100_000)
+        tracker.onPlaybackState(true, positionMs = 100_000L)
+        assertTrue(tracker.checkThreshold() is TrackerEvent.ScrobbleReady)
+
+        clock.advance(5_000)
+        tracker.onPlaybackState(tracker.isPlaying)
+        clock.advance(20_000)
+        assertEquals(emptyList<TrackerEvent>(), tracker.onPlaybackState(true, positionMs = 100_000L))
+    }
+
+    @Test
+    fun `at zero percent every resume after a pause scrobbles again`() {
         val instant = PlaybackTracker(clock) { 0 }
         instant.onMetadata(song)
         instant.onPlaybackState(true)
@@ -249,8 +336,10 @@ class PlaybackTrackerTest {
         assertEquals(emptyList<TrackerEvent>(), instant.onPlaybackState(false))
 
         clock.advance(5_000)
-        assertEquals(listOf(TrackerEvent.NowPlaying(song)), instant.onPlaybackState(true))
-        assertEquals(0L, instant.msUntilScrobble())
-        assertEquals(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_005)), instant.checkThreshold())
+        assertEquals(
+            listOf(TrackerEvent.ScrobbleReady(Scrobble(song, 1_700_000_005)), TrackerEvent.NowPlaying(song)),
+            instant.onPlaybackState(true),
+        )
+        assertNull(instant.checkThreshold())
     }
 }

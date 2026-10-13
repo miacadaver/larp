@@ -59,6 +59,7 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
     val sendAlbum by viewModel.sendAlbum.collectAsStateWithLifecycle()
     val cleanAlbumTitles by viewModel.cleanAlbumTitles.collectAsStateWithLifecycle()
     val firstArtistOnly by viewModel.firstArtistOnly.collectAsStateWithLifecycle()
+    val scrobbleAgain by viewModel.scrobbleAgain.collectAsStateWithLifecycle()
     val apps by viewModel.apps.collectAsStateWithLifecycle()
     val recent by viewModel.recent.collectAsStateWithLifecycle()
     val lastFmCheck by viewModel.lastFmCheck.collectAsStateWithLifecycle()
@@ -110,6 +111,8 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
                     onCleanAlbumTitlesChange = viewModel::setCleanAlbumTitles,
                     firstArtistOnly = firstArtistOnly,
                     onFirstArtistOnlyChange = viewModel::setFirstArtistOnly,
+                    scrobbleAgain = scrobbleAgain,
+                    onScrobbleAgainChange = viewModel::setScrobbleAgain,
                 )
             }
 
@@ -309,6 +312,8 @@ private fun SettingsCard(
     onCleanAlbumTitlesChange: (Boolean) -> Unit,
     firstArtistOnly: Boolean,
     onFirstArtistOnlyChange: (Boolean) -> Unit,
+    scrobbleAgain: Boolean,
+    onScrobbleAgainChange: (Boolean) -> Unit,
 ) {
     DsCard {
         DsText(
@@ -324,16 +329,16 @@ private fun SettingsCard(
             size = 13.sp,
             color = DsColors.Subtle,
         )
-        DsText(
-            "Once a track has counted, playing it again counts again: after you stop and continue it, " +
-                "or skip back to its start.",
-            size = 13.sp,
-            color = DsColors.Subtle,
-        )
         DsSlider(
             value = thresholdPercent.toFloat(),
             onValueChange = { onThresholdChange(it.roundToInt()) },
             range = ScrobbleRules.MIN_PERCENT.toFloat()..ScrobbleRules.MAX_PERCENT.toFloat(),
+        )
+        SettingSwitch(
+            title = "Scrobble again",
+            description = "Once a track has counted, resuming it or moving to another point scrobbles it again",
+            checked = scrobbleAgain,
+            onCheckedChange = onScrobbleAgainChange,
         )
         SettingSwitch(
             title = "First artist only",
