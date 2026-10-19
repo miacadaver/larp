@@ -49,14 +49,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -236,10 +232,7 @@ fun DsCard(
 
 /** The status bar: the title on the left, and the clock and date on the right. */
 @Composable
-fun DsTopBar(
-    title: String,
-    actions: @Composable RowScope.() -> Unit = {},
-) {
+fun DsTopBar(title: String) {
     val now by produceState(System.currentTimeMillis()) {
         while (true) {
             value = System.currentTimeMillis()
@@ -258,11 +251,9 @@ fun DsTopBar(
                 .fillMaxWidth()
                 .height(32.dp)
                 .padding(horizontal = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             DsText(title, size = 14.sp, color = Color.White, modifier = Modifier.weight(1f))
-            actions()
             DsText(clock, size = 14.sp, color = Color.White)
         }
     }
@@ -393,69 +384,6 @@ fun DsSwitch(
                 .size(12.dp)
                 .background(if (checked) Color.White else DsColors.Border),
         )
-    }
-}
-
-@Composable
-fun DsIconToggle(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    label: String,
-    modifier: Modifier = Modifier,
-    icon: @Composable (Boolean) -> Unit,
-) {
-    val source = remember { MutableInteractionSource() }
-    Box(
-        modifier
-            .size(28.dp)
-            .dsPanel(fill = if (checked) DsColors.Cursor else DsColors.TopLight, border = 1.dp)
-            .toggleable(
-                value = checked,
-                interactionSource = source,
-                indication = null,
-                role = Role.Switch,
-                onValueChange = onCheckedChange,
-            )
-            .semantics(mergeDescendants = true) {
-                contentDescription = label
-                stateDescription = if (checked) "On" else "Off"
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        icon(checked)
-    }
-}
-
-@Composable
-fun ScrobblingIcon(checked: Boolean, modifier: Modifier = Modifier) {
-    val color = if (checked) Color.White else Color.White.copy(alpha = 0.55f)
-    Canvas(modifier.size(18.dp)) {
-        val stroke = 1.5.dp.toPx()
-        drawCircle(color, radius = 1.7.dp.toPx(), center = center)
-        for (radius in listOf(4.5.dp.toPx(), 7.5.dp.toPx())) {
-            for (start in listOf(135f, -45f)) {
-                drawArc(
-                    color = color,
-                    startAngle = start,
-                    sweepAngle = 90f,
-                    useCenter = false,
-                    topLeft = Offset(center.x - radius, center.y - radius),
-                    size = Size(radius * 2, radius * 2),
-                    style = Stroke(width = stroke, cap = StrokeCap.Round),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun AlbumIcon(checked: Boolean, modifier: Modifier = Modifier) {
-    val color = if (checked) Color.White else Color.White.copy(alpha = 0.55f)
-    Canvas(modifier.size(18.dp)) {
-        val stroke = 1.5.dp.toPx()
-        drawCircle(color, radius = 7.5.dp.toPx(), center = center, style = Stroke(width = stroke))
-        drawCircle(color, radius = 3.8.dp.toPx(), center = center, style = Stroke(width = stroke))
-        drawCircle(color, radius = 1.4.dp.toPx(), center = center)
     }
 }
 

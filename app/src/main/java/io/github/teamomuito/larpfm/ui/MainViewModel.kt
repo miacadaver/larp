@@ -11,6 +11,7 @@ import io.github.teamomuito.larpfm.lastfm.LastFmException
 import io.github.teamomuito.larpfm.lastfm.RecentTracks
 import io.github.teamomuito.larpfm.lastfm.ScrobbleService
 import io.github.teamomuito.larpfm.lastfm.Session
+import io.github.teamomuito.larpfm.service.ScrobbleTiles
 import io.github.teamomuito.larpfm.work.FlushWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -164,11 +165,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setScrobblingEnabled(enabled: Boolean) {
         settings.setScrobblingEnabled(enabled)
         if (enabled) FlushWorker.enqueue(getApplication<Application>())
+        ScrobbleTiles.requestUpdate(getApplication<Application>())
     }
 
     fun setThresholdPercent(percent: Int) = settings.setThresholdPercent(percent)
 
-    fun setSendAlbum(send: Boolean) = settings.setSendAlbum(send)
+    fun setSendAlbum(send: Boolean) {
+        settings.setSendAlbum(send)
+        ScrobbleTiles.requestUpdate(getApplication<Application>())
+    }
 
     fun setCleanAlbumTitles(clean: Boolean) = settings.setCleanAlbumTitles(clean)
 

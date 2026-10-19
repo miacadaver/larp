@@ -77,21 +77,7 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
     var askingToSignOut by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
-        DsTopBar("LARP.FM") {
-            DsIconToggle(
-                checked = enabled,
-                onCheckedChange = {
-                    viewModel.setScrobblingEnabled(it)
-                    flash = if (it) "Scrobbling on!" else "Scrobbling off!"
-                },
-                label = "Scrobbling",
-            ) { checked -> ScrobblingIcon(checked) }
-            DsIconToggle(
-                checked = sendAlbum,
-                onCheckedChange = viewModel::setSendAlbum,
-                label = "Album scrobbling",
-            ) { checked -> AlbumIcon(checked) }
-        }
+        DsTopBar("LARP.FM")
         DsPrompt(
             message = flash ?: when {
                 !hasAccess -> "Allow notification access first."

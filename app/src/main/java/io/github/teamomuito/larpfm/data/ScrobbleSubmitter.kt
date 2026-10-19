@@ -86,8 +86,16 @@ class ScrobbleSubmitter(
 
     /** Returns null to keep going, or the outcome that should end this flush. */
     private fun submit(client: LastFmClient, sessionKey: String, batch: List<ScrobbleEntry>): Outcome? {
+        if (!settings.scrobblingEnabled.value) return Outcome.DONE
+        val scrobbles = batch.map {
+            if (settings.sendAlbum.value) {
+                it.scrobble
+            } else {
+                it.scrobble.copy(track = it.scrobble.track.withoutAlbum())
+            }
+        }
         val results = try {
-            client.scrobble(sessionKey, batch.map { it.scrobble })
+            client.scrobble(sessionKey, scrobbles)
         } catch (e: IOException) {
             repository.setLastError("Network error: ${e.message}")
             return Outcome.RETRY

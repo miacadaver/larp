@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">larp.fm</string>
+    <string name="tile_scrobbling">Scrobbling</string>
+    <string name="tile_album_scrobbling">Album scrobbling</string>
+    <string name="tile_on">On</string>
+    <string name="tile_off">Off</string>
 </resources>
