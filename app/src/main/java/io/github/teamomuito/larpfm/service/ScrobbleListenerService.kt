@@ -11,12 +11,11 @@ import android.os.Looper
 import android.os.SystemClock
 import android.service.notification.NotificationListenerService
 import android.util.Log
-import io.github.teamomuito.larpfm.core.ArtistNames
 import io.github.teamomuito.larpfm.core.Clock
 import io.github.teamomuito.larpfm.core.PlaybackTracker
 import io.github.teamomuito.larpfm.core.Scrobble
-import io.github.teamomuito.larpfm.core.TitleCleaner
 import io.github.teamomuito.larpfm.core.Track
+import io.github.teamomuito.larpfm.core.TrackTagging
 import io.github.teamomuito.larpfm.core.TrackerEvent
 import io.github.teamomuito.larpfm.data.NowPlaying
 import io.github.teamomuito.larpfm.graph
@@ -155,12 +154,12 @@ class ScrobbleListenerService : NotificationListenerService() {
         /** Applies the artist and album settings to what's sent to Last.fm. */
         private fun withTagSettings(track: Track): Track {
             val settings = graph.settings
-            val artist = if (settings.firstArtistOnly.value) track.copy(artist = ArtistNames.first(track.artist)) else track
-            return when {
-                !settings.sendAlbum.value -> artist.withoutAlbum()
-                settings.cleanAlbumTitles.value -> artist.copy(album = artist.album?.let(TitleCleaner::stripBrackets))
-                else -> artist
-            }
+            return TrackTagging.apply(
+                track,
+                sendAlbum = settings.sendAlbum.value,
+                cleanAlbumTitles = settings.cleanAlbumTitles.value,
+                firstArtistOnly = settings.firstArtistOnly.value,
+            )
         }
 
         private fun shouldScrobble(): Boolean {

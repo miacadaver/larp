@@ -40,6 +40,7 @@ class ScrobbleSubmitter(
     private fun client(account: Account) = client(account.service, account.apiKey, account.apiSecret)
 
     fun sendNowPlaying(track: Track) {
+        if (!settings.scrobblingEnabled.value) return
         val account = settings.account.value ?: return
         if (System.currentTimeMillis() < quietUntilMs) return
         try {
@@ -62,10 +63,15 @@ class ScrobbleSubmitter(
 
     /** Sends every queued scrobble, in batches. */
     fun flush(): Outcome {
+        if (!settings.scrobblingEnabled.value) {
+            repository.refresh()
+            return Outcome.DONE
+        }
         val account = settings.account.value ?: return Outcome.STOP
         val client = client(account)
         try {
             while (true) {
+                if (!settings.scrobblingEnabled.value) return Outcome.DONE
                 val batch = repository.pending(LastFmClient.MAX_BATCH_SIZE)
                 if (batch.isEmpty()) break
                 val outcome = submit(client, account.sessionKey, batch)

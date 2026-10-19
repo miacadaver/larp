@@ -77,7 +77,21 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
     var askingToSignOut by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
-        DsTopBar("LARP.FM")
+        DsTopBar("LARP.FM") {
+            DsIconToggle(
+                checked = enabled,
+                onCheckedChange = {
+                    viewModel.setScrobblingEnabled(it)
+                    flash = if (it) "Scrobbling on!" else "Scrobbling off!"
+                },
+                label = "Scrobbling",
+            ) { checked -> ScrobblingIcon(checked) }
+            DsIconToggle(
+                checked = sendAlbum,
+                onCheckedChange = viewModel::setSendAlbum,
+                label = "Album scrobbling",
+            ) { checked -> AlbumIcon(checked) }
+        }
         DsPrompt(
             message = flash ?: when {
                 !hasAccess -> "Allow notification access first."
@@ -101,7 +115,7 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
             item { NowPlayingCard(nowPlaying) }
 
             if (pendingCount > 0 || lastError != null) {
-                item { QueueCard(site, pendingCount, lastError, onSendNow = viewModel::sendNow) }
+                item { QueueCard(site, pendingCount, lastError, enabled, onSendNow = viewModel::sendNow) }
             }
 
             item { SectionLabel("Settings") }
@@ -226,7 +240,13 @@ private fun NowPlayingCard(nowPlaying: NowPlaying?) {
 }
 
 @Composable
-private fun QueueCard(site: String, pendingCount: Int, lastError: String?, onSendNow: () -> Unit) {
+private fun QueueCard(
+    site: String,
+    pendingCount: Int,
+    lastError: String?,
+    scrobblingEnabled: Boolean,
+    onSendNow: () -> Unit,
+) {
     DsCard {
         if (pendingCount > 0) {
             DsText(
@@ -237,7 +257,7 @@ private fun QueueCard(site: String, pendingCount: Int, lastError: String?, onSen
         if (lastError != null) {
             DsText("$site: $lastError", size = 13.sp, color = DsColors.Error)
         }
-        if (pendingCount > 0) {
+        if (pendingCount > 0 && scrobblingEnabled) {
             DsButton(label = "Send now", onClick = onSendNow)
         }
     }

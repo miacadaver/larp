@@ -161,7 +161,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         repository.setLastError(null)
     }
 
-    fun setScrobblingEnabled(enabled: Boolean) = settings.setScrobblingEnabled(enabled)
+    fun setScrobblingEnabled(enabled: Boolean) {
+        settings.setScrobblingEnabled(enabled)
+        if (enabled) FlushWorker.enqueue(getApplication<Application>())
+    }
 
     fun setThresholdPercent(percent: Int) = settings.setThresholdPercent(percent)
 
@@ -175,7 +178,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setAppEnabled(packageName: String, enabled: Boolean) = settings.setAppEnabled(packageName, enabled)
 
-    fun sendNow() = FlushWorker.enqueue(getApplication<Application>())
+    fun sendNow() {
+        if (settings.scrobblingEnabled.value) FlushWorker.enqueue(getApplication<Application>())
+    }
 
     companion object {
         /** Where Last.fm or Libre.fm sends the browser after the user approves the app; see the manifest. */
