@@ -1,0 +1,28 @@
+{
+  "name": "larp.fm",
+  "short_name": "larp.fm",
+  "description": "A little Last.fm and Libre.fm scrobbler for Android, dressed up like a DS system menu.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F4F5F6",
+  "theme_color": "#4A6573",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -2,8 +2,13 @@
 <resources>
     <color name="accent">#3E6DB0</color>
     <color name="window_background">#E9ECEF</color>
-    <color name="ic_launcher_background">#FFE3EF</color>
-    <color name="cat_fur">#FF4FA3</color>
-    <color name="cat_inner_ear">#FFB8D9</color>
-    <color name="cat_features">#6B1340</color>
+
+    <!-- Launcher icon palette: the same colours as DsColors in the app UI. -->
+    <color name="icon_background">#F4F5F6</color>
+    <color name="icon_grid">#E1E4E7</color>
+    <color name="icon_ink">#3A3F45</color>
+    <color name="icon_subtle">#8A9096</color>
+    <color name="icon_cursor">#3E6DB0</color>
+    <color name="icon_pressed">#D5E2EE</color>
+    <color name="icon_pink">#FF4FA3</color>
 </resources>

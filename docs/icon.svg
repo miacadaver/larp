@@ -1,10 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="12 12 84 84" width="168" height="168">
-  <circle cx="54" cy="54" r="42" fill="#FFE3EF"/>
-  <path d="M32,58 C31,50 33,38 35,28 L49,40 Q54,38.5 59,40 L73,28 C75,38 77,50 76,58 C76,70 66,78 54,78 C42,78 32,70 32,58 Z" fill="#FF4FA3"/>
-  <path d="M37,34 L37.5,46 L46,40.5 Z M71,34 L70.5,46 L62,40.5 Z" fill="#FFB8D9"/>
-  <path d="M42,56 a3.5,4.5 0 1,0 7,0 a3.5,4.5 0 1,0 -7,0 Z M59,56 a3.5,4.5 0 1,0 7,0 a3.5,4.5 0 1,0 -7,0 Z" fill="#6B1340"/>
-  <path d="M45.3,54 a1.2,1.2 0 1,0 2.4,0 a1.2,1.2 0 1,0 -2.4,0 Z M62.3,54 a1.2,1.2 0 1,0 2.4,0 a1.2,1.2 0 1,0 -2.4,0 Z" fill="#FFFFFF"/>
-  <path d="M51.5,63.5 L56.5,63.5 L54,66.5 Z" fill="#6B1340"/>
-  <path d="M54,66.5 L54,68 M50.5,68.5 Q52.25,70.5 54,68 Q55.75,70.5 57.5,68.5" fill="none" stroke="#6B1340" stroke-width="1.4" stroke-linecap="round"/>
-  <path d="M41,64 L28,61.5 M41,67 L28,68.5 M67,64 L80,61.5 M67,67 L80,68.5" fill="none" stroke="#6B1340" stroke-width="1.2" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="168" height="168" role="img" aria-label="larp.fm: a pixel cat wearing blue headphones on grid paper">
+  <title>larp.fm</title>
+  <!-- DS grid paper -->
+  <rect width="108" height="108" fill="#F4F5F6"/>
+  <path d="M9 0V108 M18 0V108 M27 0V108 M36 0V108 M45 0V108 M54 0V108 M63 0V108 M72 0V108 M81 0V108 M90 0V108 M99 0V108 M0 9H108 M0 18H108 M0 27H108 M0 36H108 M0 45H108 M0 54H108 M0 63H108 M0 72H108 M0 81H108 M0 90H108 M0 99H108" fill="none" stroke="#E1E4E7" stroke-width="0.75"/>
+  <!-- headphones, behind the cat -->
+  <path d="M31 55V44L35 35H41V31H67V35H73L77 44V55" fill="none" stroke="#3E6DB0" stroke-width="4.5" stroke-linejoin="miter"/>
+  <path d="M28 47H33L35 49V62L33 64H28L26 62V49Z" fill="#3E6DB0"/>
+  <path d="M75 47H80L82 49V62L80 64H75L73 62V49Z" fill="#3E6DB0"/>
+  <path d="M30 51H31L32 52V59L31 60H30L29 59V52Z" fill="#D5E2EE"/>
+  <path d="M77 51H78L79 52V59L78 60H77L76 59V52Z" fill="#D5E2EE"/>
+  <!-- ears -->
+  <path d="M34 46L36 27L49 38Z" fill="#3A3F45"/>
+  <path d="M74 46L72 27L59 38Z" fill="#3A3F45"/>
+  <path d="M38 41L39 32L46 39Z" fill="#8A9096"/>
+  <path d="M70 41L69 32L62 39Z" fill="#8A9096"/>
+  <!-- face -->
+  <path d="M34 46V62L38 68L44 72H64L70 68L74 62V46L68 38H40Z" fill="#3A3F45"/>
+  <rect x="42" y="49" width="9" height="10" fill="#F4F5F6"/>
+  <rect x="57" y="49" width="9" height="10" fill="#F4F5F6"/>
+  <rect x="45" y="51" width="3" height="5" fill="#3E6DB0"/>
+  <rect x="60" y="51" width="3" height="5" fill="#3E6DB0"/>
+  <path d="M51 60H57L54 63Z" fill="#FF4FA3"/>
+  <path d="M54 63V65M50 66Q52 68 54 65Q56 68 58 66" fill="none" stroke="#F4F5F6" stroke-width="1.5"/>
+  <path d="M40 62L29 59M40 65L29 67M68 62L79 59M68 65L79 67" fill="none" stroke="#8A9096" stroke-width="1.5"/>
 </svg>

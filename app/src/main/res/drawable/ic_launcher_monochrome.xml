@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Themed-icon silhouette (Android 13+): only the shape counts, so the eyes and nose are cut out. -->
+<!-- Themed-icon silhouette (Android 13+): the cat, headphones, eyes and nose. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M31 55V44L35 35H41V31H67V35H73L77 44V55"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineJoin="miter"
+        android:strokeWidth="4.5" />
+    <path
         android:fillColor="#FFFFFF"
         android:fillType="evenOdd"
-        android:pathData="M32,58 C31,50 33,38 35,28 L49,40 Q54,38.5 59,40 L73,28 C75,38 77,50 76,58 C76,70 66,78 54,78 C42,78 32,70 32,58 Z M42,56 a3.5,4.5 0 1,0 7,0 a3.5,4.5 0 1,0 -7,0 Z M59,56 a3.5,4.5 0 1,0 7,0 a3.5,4.5 0 1,0 -7,0 Z M51.5,63.5 L56.5,63.5 L54,66.5 Z" />
+        android:pathData="M28 47H33L35 49V62L33 64H28L26 62V49Z M29,51H32V60H29Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M75 47H80L82 49V62L80 64H75L73 62V49Z M76,51H79V60H76Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M34 46L36 27L49 38Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M74 46L72 27L59 38Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M34 46V62L38 68L44 72H64L70 68L74 62V46L68 38H40Z M42,49H51V59H42Z M57,49H66V59H57Z M51,60H57L54,63Z" />
 </vector>

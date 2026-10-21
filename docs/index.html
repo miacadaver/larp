@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>larp.fm - a DS-style Last.fm and Libre.fm scrobbler for Android</title>
+  <meta name="description" content="larp.fm scrobbles whatever is playing on your Android phone to Last.fm or Libre.fm. It looks like a Nintendo DS system menu: grid paper, notched panels and a pixel font.">
+  <meta name="theme-color" content="#4A6573">
+  <meta name="color-scheme" content="light">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="larp.fm - a DS-style scrobbler for Android">
+  <meta property="og:description" content="Scrobbles whatever is playing on your phone to Last.fm or Libre.fm, dressed up like a DS system menu.">
+  <meta property="og:image" content="https://teamomuito.github.io/larp.fm/assets/og.png">
+  <meta property="og:url" content="https://teamomuito.github.io/larp.fm/">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon.ico" sizes="any">
+  <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="preload" href="fonts/dotgothic16.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="topbar-title" href="#top">LARP.FM</a>
+      <span class="topbar-clock" id="clock">--:--&nbsp;&nbsp;--/--</span>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap" id="top">
+
+      <section class="prompt-row" aria-label="Summary">
+        <div class="panel prompt">
+          <div class="panel-body prompt-body">
+            <p>A little Last.fm and Libre.fm scrobbler for Android.</p>
+            <span class="pill">Android 8.0+</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="hero" aria-labelledby="title">
+        <div class="selected hero-mark" aria-hidden="true">
+          <span class="bracket tl"></span>
+          <span class="bracket tr"></span>
+          <span class="bracket bl"></span>
+          <span class="bracket br"></span>
+          <img src="icon.svg" width="280" height="280" alt="">
+        </div>
+
+        <div class="hero-copy">
+          <h1 id="title">larp.fm</h1>
+          <p class="lede">
+            Picks up whatever is playing on your phone and scrobbles it to
+            <a href="https://www.last.fm">Last.fm</a> or <a href="https://libre.fm">Libre.fm</a>.
+            No internet? Plays wait and go out later.
+          </p>
+          <div class="actions">
+            <a class="panel button" href="https://github.com/teamomuito/larp.fm/releases/latest/download/larpfm.apk" data-gh="/releases/latest/download/larpfm.apk">
+              <span class="ring" aria-hidden="true">A</span>
+              <span>Download APK</span>
+            </a>
+            <a class="panel button" href="https://github.com/teamomuito/larp.fm" data-gh="">
+              <span class="ring" aria-hidden="true">B</span>
+              <span>GitHub</span>
+            </a>
+          </div>
+          <p class="fine">Free and open source. Android 8.0 and newer.</p>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="now-heading">
+        <h2 id="now-heading" class="section-label">Now playing</h2>
+        <div class="selected">
+          <span class="bracket tl"></span>
+          <span class="bracket tr"></span>
+          <span class="bracket bl"></span>
+          <span class="bracket br"></span>
+          <article class="panel card now-card">
+            <div class="panel-body">
+              <div class="now-top">
+                <img class="page-icon" src="assets/page.svg" width="22" height="27" alt="">
+                <div class="now-meta">
+                  <p class="now-track">Everything In Its Right Place</p>
+                  <p class="subtle">Radiohead</p>
+                  <p class="subtle small">in Spotify</p>
+                </div>
+                <span class="pill">Last.fm</span>
+              </div>
+              <div class="progress" aria-hidden="true"><span></span></div>
+              <div class="row-between">
+                <span class="subtle small">Scrobbling is on.</span>
+                <span class="subtle small">12 waiting</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="features" aria-labelledby="features-heading">
+        <h2 id="features-heading" class="section-label">Features</h2>
+        <div class="feature-grid">
+          <article class="panel card feature">
+            <div class="panel-body">
+              <img class="page-icon" src="assets/page.svg" width="22" height="27" alt="">
+              <div class="feature-copy">
+                <h3>Every music app</h3>
+                <p>Anything with a media notification: Spotify, YouTube Music, Poweramp, and the rest.</p>
+              </div>
+              <span class="pill">ALL APPS</span>
+            </div>
+          </article>
+
+          <article class="panel card feature">
+            <div class="panel-body">
+              <img class="page-icon" src="assets/page.svg" width="22" height="27" alt="">
+              <div class="feature-copy">
+                <h3>Works offline</h3>
+                <p>No connection? Plays wait in the queue and go out when you are back online.</p>
+              </div>
+              <span class="pill">OFFLINE</span>
+            </div>
+          </article>
+
+          <article class="panel card feature">
+            <div class="panel-body">
+              <img class="page-icon" src="assets/page.svg" width="22" height="27" alt="">
+              <div class="feature-copy">
+                <h3>Your own threshold</h3>
+                <p>Scrobble as soon as a song starts, or once up to 50% of it has played.</p>
+              </div>
+              <span class="pill">0-50%</span>
+            </div>
+          </article>
+
+          <article class="panel card feature">
+            <div class="panel-body">
+              <img class="page-icon" src="assets/page.svg" width="22" height="27" alt="">
+              <div class="feature-copy">
+                <h3>Last.fm or Libre.fm</h3>
+                <p>Pick the site when you sign in. Libre.fm needs no API key of your own.</p>
+              </div>
+              <span class="pill">2 SITES</span>
+            </div>
+          </article>
+
+          <article class="panel card feature">
+            <div class="panel-body">
+              <img class="page-icon" src="assets/page.svg" width="22" height="27" alt="">
+              <div class="feature-copy">
+                <h3>Tidy tags</h3>
+                <p>Drop remaster brackets, keep the first artist, and choose whether albums go along.</p>
+              </div>
+              <span class="pill">CLEAN</span>
+            </div>
+          </article>
+
+          <article class="panel card feature">
+            <div class="panel-body">
+              <img class="page-icon" src="assets/page.svg" width="22" height="27" alt="">
+              <div class="feature-copy">
+                <h3>Know what landed</h3>
+                <p>Check the site's recent scrobbles and the latest API replies right in the app.</p>
+              </div>
+              <span class="pill">CHECK</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="install" aria-labelledby="install-heading">
+        <h2 id="install-heading" class="section-label">Install</h2>
+        <div class="install-list">
+          <article class="panel card clip">
+            <div class="panel-body clip-body">
+              <span class="step" aria-hidden="true">01</span>
+              <div class="clip-copy">
+                <h3>Download the APK</h3>
+                <p>Grab the latest build from <a href="https://github.com/teamomuito/larp.fm/releases/latest/download/larpfm.apk" data-gh="/releases/latest/download/larpfm.apk">the releases page</a>. Your phone will ask you to allow installs from your browser or files app.</p>
+              </div>
+              <span class="pill">APK</span>
+            </div>
+          </article>
+
+          <article class="panel card clip">
+            <div class="panel-body clip-body">
+              <span class="step" aria-hidden="true">02</span>
+              <div class="clip-copy">
+                <h3>Sign in</h3>
+                <p>Choose Last.fm or Libre.fm. If the build has no API key baked in, Last.fm asks you to <a href="https://www.last.fm/api/account/create">create a free API account</a> first. It takes a minute.</p>
+              </div>
+              <span class="pill">A</span>
+            </div>
+          </article>
+
+          <article class="panel card clip">
+            <div class="panel-body clip-body">
+              <span class="step" aria-hidden="true">03</span>
+              <div class="clip-copy">
+                <h3>Allow notification access</h3>
+                <p>That is the only way Android lets an app see what is playing. larp.fm does not read or store your notifications.</p>
+              </div>
+              <span class="pill">ON</span>
+            </div>
+          </article>
+        </div>
+
+        <div class="panel tip">
+          <div class="panel-body tip-body">
+            <span class="pill">TIP</span>
+            <p>On Android 13+, if the notification access switch is greyed out, open <strong>App info</strong> and use <strong>Allow restricted settings</strong>, then try again.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="look" aria-labelledby="look-heading">
+        <h2 id="look-heading" class="section-label">The look</h2>
+        <div class="look-grid">
+          <article class="panel card mock">
+            <div class="panel-body">
+              <p class="mock-label">Settings</p>
+              <p class="mock-line">Scrobble threshold: 50%</p>
+              <p class="subtle small">A track counts once 50% of it has played, or 4 minutes, whichever comes first.</p>
+              <div class="slider" aria-hidden="true"><span class="slider-track"><span class="slider-fill"></span></span></div>
+
+              <div class="setting-row">
+                <div>
+                  <p>Scrobble again</p>
+                  <p class="subtle small">Resuming, seeking or repeating a song scrobbles it again.</p>
+                </div>
+                <span class="switch on" aria-hidden="true"><i></i></span>
+              </div>
+
+              <div class="setting-row">
+                <div>
+                  <p>Scrobble album</p>
+                  <p class="subtle small">Album info is sent with each scrobble.</p>
+                </div>
+                <span class="switch on" aria-hidden="true"><i></i></span>
+              </div>
+
+              <div class="setting-row">
+                <div>
+                  <p>Clean album titles</p>
+                  <p class="subtle small">Iron Maiden (Remaster) [Special] becomes Iron Maiden.</p>
+                </div>
+                <span class="switch" aria-hidden="true"><i></i></span>
+              </div>
+            </div>
+          </article>
+
+          <div class="look-stack">
+            <article class="panel card mock">
+              <div class="panel-body">
+                <p class="mock-label">Queue</p>
+                <p class="mock-line">3 scrobbles waiting to be sent</p>
+                <div class="actions small-actions">
+                  <span class="panel button mini"><span class="ring" aria-hidden="true">A</span><span>Send now</span></span>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel card mock">
+              <div class="panel-body">
+                <p class="mock-label">Recent scrobbles</p>
+                <div class="scrobble-row">
+                  <img class="page-icon" src="assets/page.svg" width="22" height="27" alt="">
+                  <div class="scrobble-copy">
+                    <p>All My Friends</p>
+                    <p class="subtle small">LCD Soundsystem - sent</p>
+                  </div>
+                  <span class="pill">14:02</span>
+                </div>
+                <div class="scrobble-row">
+                  <img class="page-icon" src="assets/page.svg" width="22" height="27" alt="">
+                  <div class="scrobble-copy">
+                    <p>No Cars Go</p>
+                    <p class="subtle small">Arcade Fire - waiting to send</p>
+                  </div>
+                  <span class="pill">13:46</span>
+                </div>
+                <div class="scrobble-row">
+                  <img class="page-icon" src="assets/page.svg" width="22" height="27" alt="">
+                  <div class="scrobble-copy">
+                    <p>Once in a Lifetime</p>
+                    <p class="subtle small">Talking Heads - sent</p>
+                  </div>
+                  <span class="pill">13:39</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="closing" aria-label="Download">
+        <div class="panel closing-panel">
+          <div class="panel-body closing-body">
+            <div>
+              <h2>Ready to scrobble?</h2>
+              <p class="subtle">No account setup beyond the site you already use.</p>
+            </div>
+            <a class="panel button" href="https://github.com/teamomuito/larp.fm/releases/latest/download/larpfm.apk" data-gh="/releases/latest/download/larpfm.apk">
+              <span class="ring" aria-hidden="true">A</span>
+              <span>Download APK</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="bottombar">
+    <div class="wrap footer-inner">
+      <p>larp.fm is free and open source. The look is borrowed from <a href="https://github.com/teamomuito/pictoclip">Pictoclip</a>; the font is DotGothic16 (OFL). Not affiliated with Nintendo.</p>
+      <p class="footer-links">
+        <a href="https://github.com/teamomuito/larp.fm" data-gh="">GitHub</a>
+        <a href="https://github.com/teamomuito/larp.fm/releases" data-gh="/releases">Releases</a>
+        <a href="#top">Top</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var clock = document.getElementById('clock');
+      if (!clock) return;
+      function pad(n) { return String(n).padStart(2, '0'); }
+      function tick() {
+        var now = new Date();
+        clock.textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) +
+          '\u00a0\u00a0' + pad(now.getMonth() + 1) + '/' + pad(now.getDate());
+      }
+      tick();
+      window.setInterval(tick, 10000);
+    })();
+
+    (function () {
+      var host = location.hostname;
+      if (!/(^|\.)github\.io$/i.test(host)) return;
+      var owner = host.split('.')[0];
+      var parts = location.pathname.split('/').filter(Boolean);
+      var repo = parts.length ? parts[0] : 'larp.fm';
+      document.querySelectorAll('[data-gh]').forEach(function (link) {
+        link.href = 'https://github.com/' + owner + '/' + repo + link.getAttribute('data-gh');
+      });
+    })();
+  </script>
+</body>
+</html>
