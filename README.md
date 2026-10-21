@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/icon.svg" width="120" alt="larp.fm">
+  <img src="docs/logo.svg" width="120" alt="larp.fm">
 </p>
 
 <h1 align="center">larp.fm</h1>
