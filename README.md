@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/teamomuito/larp.fm/actions/workflows/android.yml"><img src="https://github.com/teamomuito/larp.fm/actions/workflows/android.yml/badge.svg" alt="build"></a>
+  <a href="https://github.com/miacadaver/larp/actions/workflows/android.yml"><img src="https://github.com/miacadaver/larp/actions/workflows/android.yml/badge.svg" alt="build"></a>
   <img src="https://img.shields.io/badge/android-8.0%2B-ff4fa3" alt="Android 8.0+">
   <img src="https://img.shields.io/badge/made%20with-kotlin-c2185b" alt="made with Kotlin">
 </p>
@@ -34,9 +34,9 @@ any app with a media notification) and scrobbles it to [Last.fm](https://www.las
 
 ## install
 
-1. Download **[larpfm.apk](https://github.com/teamomuito/larp.fm/releases/latest/download/larpfm.apk)**.
+1. Download **[larpfm.apk](https://github.com/miacadaver/larp/releases/latest/download/larpfm.apk)**.
    That link always points to the newest build, and older ones are on the
-   [releases page](https://github.com/teamomuito/larp.fm/releases).
+   [releases page](https://github.com/miacadaver/larp/releases).
 2. Install the APK. Your phone will ask you to allow installs from your browser or files app.
 3. Tap **Sign in with Last.fm**, hit Allow on the Last.fm page, and you're back in the app. If
    the build doesn't have an API key baked in, it'll ask for one first.
