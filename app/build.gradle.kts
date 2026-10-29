@@ -24,7 +24,7 @@ android {
         val buildNumber = providers.environmentVariable("GITHUB_RUN_NUMBER").orNull?.toIntOrNull() ?: 1
         versionCode = buildNumber
         // Bump by hand for a new version. Releases are titled with it ("larp.fm 2.0.0 (build 23)").
-        versionName = "2.0.1"
+        versionName = "2.1.0"
 
         // Optional: bake in a Last.fm API account so users don't have to paste their own.
         buildConfigField("String", "LASTFM_API_KEY", secret("LASTFM_API_KEY").orEmpty().quoted())

@@ -14,11 +14,12 @@ object TrackTagging {
         albumOverrides: List<AlbumOverride> = emptyList(),
     ): Track {
         val artist = if (firstArtistOnly) track.copy(artist = ArtistNames.first(track.artist)) else track
+        // Match the original artist before "First artist only".
+        val override = albumOverrides.firstOrNull { it.matches(track.artist) }
         return when {
             !sendAlbum -> artist.withoutAlbum()
-            // Match the original artist before "First artist only"; preserve the album entered by the user.
-            albumOverrides.any { it.matches(track.artist) } ->
-                artist.copy(album = albumOverrides.first { it.matches(track.artist) }.album)
+            // Preserve the album entered by the user, including brackets.
+            override != null -> artist.copy(album = override.album)
             cleanAlbumTitles -> artist.copy(album = artist.album?.let(TitleCleaner::stripBrackets))
             else -> artist
         }

@@ -1,16 +1,16 @@
 package io.github.teamomuito.larpfm.data
 
-import org.json.JSONArray
-import org.json.JSONObject
-import io.github.teamomuito.larpfm.core.AlbumOverride
 import android.content.Context
 import androidx.core.content.edit
 import io.github.teamomuito.larpfm.BuildConfig
+import io.github.teamomuito.larpfm.core.AlbumOverride
 import io.github.teamomuito.larpfm.core.ScrobbleRules
 import io.github.teamomuito.larpfm.lastfm.ScrobbleService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.json.JSONArray
+import org.json.JSONObject
 
 /** A signed-in Last.fm account. The session key only works with the API account it was created with. */
 data class Account(
@@ -66,7 +66,7 @@ class Settings(context: Context) {
     private fun loadAlbumOverrides(): List<AlbumOverride> {
         val saved = runCatching { JSONArray(prefs.getString(KEY_ALBUM_OVERRIDES, "[]")) }.getOrNull()
             ?: return emptyList()
-        return buildList {
+        return buildList<AlbumOverride> {
             for (i in 0 until saved.length()) {
                 val item = saved.optJSONObject(i) ?: continue
                 val artist = item.optString("artist").trim()

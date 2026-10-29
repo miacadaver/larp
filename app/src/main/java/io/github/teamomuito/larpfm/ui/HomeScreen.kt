@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,7 +75,7 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
             flash = null
         }
     }
-    var showAlbumOverrides by remember { mutableStateOf(false) }
+    var showAlbumOverrides by rememberSaveable { mutableStateOf(false) }
     var askingToSignOut by remember { mutableStateOf(false) }
 
     if (showAlbumOverrides) {
