@@ -1,5 +1,8 @@
 package io.github.teamomuito.larpfm.data
 
+import org.json.JSONArray
+import org.json.JSONObject
+import io.github.teamomuito.larpfm.core.AlbumOverride
 import android.content.Context
 import androidx.core.content.edit
 import io.github.teamomuito.larpfm.BuildConfig
@@ -56,6 +59,47 @@ class Settings(context: Context) {
 
     /** Resuming a track after a pause, jumping to another point in it, or it repeating, scrobbles it again. */
     val scrobbleAgain: StateFlow<Boolean> = _scrobbleAgain.asStateFlow()
+
+    private val _albumOverrides = MutableStateFlow(loadAlbumOverrides())
+    val albumOverrides: StateFlow<List<AlbumOverride>> = _albumOverrides.asStateFlow()
+
+    private fun loadAlbumOverrides(): List<AlbumOverride> {
+        val saved = runCatching { JSONArray(prefs.getString(KEY_ALBUM_OVERRIDES, "[]")) }.getOrNull()
+            ?: return emptyList()
+        return buildList {
+            for (i in 0 until saved.length()) {
+                val item = saved.optJSONObject(i) ?: continue
+                val artist = item.optString("artist").trim()
+                val album = item.optString("album").trim()
+                if (artist.isNotEmpty() && album.isNotEmpty() && none { it.matches(artist) }) {
+                    add(AlbumOverride(artist, album))
+                }
+            }
+        }
+    }
+
+    @Synchronized
+    fun saveAlbumOverride(originalArtist: String?, artist: String, album: String): Boolean {
+        val rule = AlbumOverride(artist.trim(), album.trim())
+        if (rule.artist.isEmpty() || rule.album.isEmpty()) return false
+        val remaining = _albumOverrides.value.filterNot { originalArtist != null && it.matches(originalArtist) }
+        if (remaining.any { it.matches(rule.artist) }) return false
+        persistAlbumOverrides(remaining + rule)
+        return true
+    }
+
+    @Synchronized
+    fun deleteAlbumOverride(artist: String) {
+        persistAlbumOverrides(_albumOverrides.value.filterNot { it.matches(artist) })
+    }
+
+    private fun persistAlbumOverrides(rules: List<AlbumOverride>) {
+        val sorted = rules.sortedBy { it.artist.lowercase(java.util.Locale.ROOT) }
+        val json = JSONArray()
+        sorted.forEach { json.put(JSONObject().put("artist", it.artist).put("album", it.album)) }
+        prefs.edit { putString(KEY_ALBUM_OVERRIDES, json.toString()) }
+        _albumOverrides.value = sorted
+    }
 
     private val _apps = MutableStateFlow(loadApps())
 
@@ -181,6 +225,7 @@ class Settings(context: Context) {
     }
 
     private companion object {
+        const val KEY_ALBUM_OVERRIDES = "album_overrides"
         const val KEY_USERNAME = "username"
         const val KEY_SESSION_KEY = "session_key"
         const val KEY_API_KEY = "api_key"

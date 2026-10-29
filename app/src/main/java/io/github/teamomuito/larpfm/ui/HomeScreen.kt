@@ -74,7 +74,13 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
             flash = null
         }
     }
+    var showAlbumOverrides by remember { mutableStateOf(false) }
     var askingToSignOut by remember { mutableStateOf(false) }
+
+    if (showAlbumOverrides) {
+        AlbumOverridesScreen(viewModel, onBack = { showAlbumOverrides = false })
+        return
+    }
 
     Column(Modifier.fillMaxSize()) {
         DsTopBar("LARP.FM")
@@ -117,6 +123,14 @@ fun HomeScreen(viewModel: MainViewModel, account: Account) {
                     onFirstArtistOnlyChange = viewModel::setFirstArtistOnly,
                     scrobbleAgain = scrobbleAgain,
                     onScrobbleAgainChange = viewModel::setScrobbleAgain,
+                )
+            }
+
+            item {
+                DsButton(
+                    label = "Album overrides",
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { showAlbumOverrides = true },
                 )
             }
 

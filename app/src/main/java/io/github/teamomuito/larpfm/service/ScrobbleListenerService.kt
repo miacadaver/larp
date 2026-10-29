@@ -159,6 +159,7 @@ class ScrobbleListenerService : NotificationListenerService() {
                 sendAlbum = settings.sendAlbum.value,
                 cleanAlbumTitles = settings.cleanAlbumTitles.value,
                 firstArtistOnly = settings.firstArtistOnly.value,
+                albumOverrides = settings.albumOverrides.value,
             )
         }
 

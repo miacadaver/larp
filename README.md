@@ -28,6 +28,7 @@ any app with a media notification) and scrobbles it to [Last.fm](https://www.las
 - send the album, or just artist + track
 - clean up album titles: `Iron Maiden (Remaster) [Special]` becomes `Iron Maiden`
 - scrobble just the first artist: `Artist A feat. Artist B` becomes `Artist A`
+- set an album override for an artist under Settings → Album overrides (ignores capitalization and surrounding spaces; applies to new plays and now-playing updates when Send album is on)
 - choose which apps get scrobbled
 - check what Last.fm or Libre.fm actually recorded, right from the app
 - the look of [Pictoclip](https://github.com/teamomuito/pictoclip): grid paper, notched panels, and a pixel font

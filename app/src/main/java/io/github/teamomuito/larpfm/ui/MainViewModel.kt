@@ -46,6 +46,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val cleanAlbumTitles = settings.cleanAlbumTitles
     val firstArtistOnly = settings.firstArtistOnly
     val scrobbleAgain = settings.scrobbleAgain
+    val albumOverrides = settings.albumOverrides
     val apps = settings.apps
     val nowPlaying = repository.nowPlaying
     val recent = repository.recent
@@ -182,6 +183,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setScrobbleAgain(again: Boolean) = settings.setScrobbleAgain(again)
 
     fun setAppEnabled(packageName: String, enabled: Boolean) = settings.setAppEnabled(packageName, enabled)
+
+    fun saveAlbumOverride(originalArtist: String?, artist: String, album: String): Boolean =
+        settings.saveAlbumOverride(originalArtist, artist, album)
+
+    fun deleteAlbumOverride(artist: String) = settings.deleteAlbumOverride(artist)
 
     fun sendNow() {
         if (settings.scrobblingEnabled.value) FlushWorker.enqueue(getApplication<Application>())

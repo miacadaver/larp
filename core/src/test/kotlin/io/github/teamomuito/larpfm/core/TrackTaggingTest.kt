@@ -67,4 +67,46 @@ class TrackTaggingTest {
         assertEquals("Artist A", tagged.artist)
         assertNull(tagged.album)
     }
+
+    @Test
+    fun `override matches full original artist ignoring case and surrounding spaces`() {
+        val tagged = TrackTagging.apply(track, true, false, true,
+            listOf(AlbumOverride("  ARTIST A FEAT. ARTIST B  ", "Chosen Album")))
+        assertEquals(track.copy(artist = "Artist A", album = "Chosen Album"), tagged)
+    }
+
+    @Test
+    fun `override does not match a partial artist`() {
+        val tagged = TrackTagging.apply(track, true, false, true,
+            listOf(AlbumOverride("Artist A", "Chosen Album")))
+        assertEquals(track.copy(artist = "Artist A"), tagged)
+    }
+
+    @Test
+    fun `send album off takes precedence over overrides`() {
+        val tagged = TrackTagging.apply(track, false, true, false,
+            listOf(AlbumOverride(track.artist, "Chosen Album")))
+        assertEquals(track.withoutAlbum(), tagged)
+    }
+
+    @Test
+    fun `explicit override keeps brackets even when album cleanup is on`() {
+        val tagged = TrackTagging.apply(track, true, true, false,
+            listOf(AlbumOverride(track.artist, "Chosen Album (Live)")))
+        assertEquals(track.copy(album = "Chosen Album (Live)"), tagged)
+    }
+
+    @Test
+    fun `override fills an absent album`() {
+        val tagged = TrackTagging.apply(track.copy(album = null), true, false, false,
+            listOf(AlbumOverride(track.artist, "Chosen Album")))
+        assertEquals("Chosen Album", tagged.album)
+    }
+
+    @Test
+    fun `unmatched artist keeps normal album cleanup`() {
+        val tagged = TrackTagging.apply(track, true, true, false,
+            listOf(AlbumOverride("Other Artist", "Chosen Album")))
+        assertEquals(track.copy(album = "Album"), tagged)
+    }
 }
